@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ROI Calculator - Broker Tool</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #ffffff;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            padding-bottom: 100px; /* Space for bottom navigation */
+        }
+
+        .back-button {
+            background: linear-gradient(45deg, #4facfe, #00f2fe);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+        }
+
+        .back-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.4);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #4facfe, #00f2fe);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .calculator-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .input-section, .results-section {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 25px;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title i {
+            color: #4facfe;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 8px;
+            background: rgba(255,255,255,0.1);
+            color: #ffffff;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .input-group input:focus, .input-group select:focus {
+            outline: none;
+            border-color: #4facfe;
+            background: rgba(255,255,255,0.15);
+        }
+
+        .input-group input::placeholder {
+            color: #b0b0b0;
+        }
+
+        .range-slider {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .range-slider input[type="range"] {
+            flex: 1;
+        }
+
+        .range-value {
+            min-width: 60px;
+            text-align: right;
+            font-weight: 600;
+            color: #4facfe;
+        }
+
+        .calculate-btn {
+            background: linear-gradient(45deg, #4facfe, #00f2fe);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            width: 100%;
+            transition: all 0.3s;
+            margin-top: 20px;
+        }
+
+        .calculate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.4);
+        }
+
+        .result-item {
+            background: rgba(255,255,255,0.05);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .result-label {
+            color: #b0b0b0;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+
+        .result-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #4facfe;
+        }
+
+        .result-subtitle {
+            color: #cccccc;
+            font-size: 0.8rem;
+            margin-top: 5px;
+        }
+
+        .roi-chart {
+            background: rgba(255,255,255,0.05);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .chart-bar {
+            background: linear-gradient(45deg, #4facfe, #00f2fe);
+            height: 30px;
+            border-radius: 15px;
+            margin: 10px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chart-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+
+        .actions-section {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            border: 1px solid rgba(255,255,255,0.1);
+            text-align: center;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            background: linear-gradient(45deg, #4facfe, #00f2fe);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.4);
+        }
+
+        .action-btn.secondary {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .action-btn.secondary:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        @media (max-width: 768px) {
+            .calculator-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding: 15px 0;
+            z-index: 1000;
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            padding: 10px;
+            border-radius: 10px;
+        }
+
+        .nav-item:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .nav-item.active {
+            background: rgba(79, 172, 254, 0.2);
+            color: #4facfe;
+        }
+
+        .nav-icon {
+            font-size: 1.2rem;
+        }
+
+        .nav-label {
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="home.html" class="back-button">
+            <i class="fas fa-arrow-left"></i>
+            Back to Home
+        </a>
+
+        <div class="header">
+            <h1><i class="fas fa-calculator"></i> ROI Calculator</h1>
+            <p>Calculate potential returns for your client's investment</p>
+        </div>
+
+        <div class="calculator-grid">
+            <div class="input-section">
+                <h2 class="section-title">
+                    <i class="fas fa-edit"></i>
+                    Investment Details
+                </h2>
+                
+                <div class="input-group">
+                    <label for="propertyPrice">Property Price (AED)</label>
+                    <input type="number" id="propertyPrice" placeholder="Enter property price" value="1000000">
+                </div>
+
+                <div class="input-group">
+                    <label for="downPayment">Down Payment (%)</label>
+                    <div class="range-slider">
+                        <input type="range" id="downPayment" min="10" max="50" value="20">
+                        <span class="range-value" id="downPaymentValue">20%</span>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="annualAppreciation">Annual Appreciation (%)</label>
+                    <div class="range-slider">
+                        <input type="range" id="annualAppreciation" min="5" max="15" value="8" step="0.5">
+                        <span class="range-value" id="appreciationValue">8%</span>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="rentalYield">Expected Rental Yield (%)</label>
+                    <div class="range-slider">
+                        <input type="range" id="rentalYield" min="4" max="12" value="6" step="0.5">
+                        <span class="range-value" id="rentalValue">6%</span>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="holdingPeriod">Holding Period (Years)</label>
+                    <select id="holdingPeriod">
+                        <option value="3">3 Years</option>
+                        <option value="5" selected>5 Years</option>
+                        <option value="7">7 Years</option>
+                        <option value="10">10 Years</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="serviceCharge">Annual Service Charge (AED)</label>
+                    <input type="number" id="serviceCharge" placeholder="Enter annual service charge" value="12000">
+                </div>
+
+                <button class="calculate-btn" onclick="calculateROI()">
+                    <i class="fas fa-calculator"></i>
+                    Calculate ROI
+                </button>
+            </div>
+
+            <div class="results-section">
+                <h2 class="section-title">
+                    <i class="fas fa-chart-line"></i>
+                    Investment Analysis
+                </h2>
+                
+                <div id="results">
+                    <div class="result-item">
+                        <div class="result-label">Initial Investment</div>
+                        <div class="result-value" id="initialInvestment">AED 200,000</div>
+                        <div class="result-subtitle">20% down payment</div>
+                    </div>
+
+                    <div class="result-item">
+                        <div class="result-label">Property Value After Period</div>
+                        <div class="result-value" id="futureValue">AED 1,469,328</div>
+                        <div class="result-subtitle">With appreciation</div>
+                    </div>
+
+                    <div class="result-item">
+                        <div class="result-label">Total Rental Income</div>
+                        <div class="result-value" id="totalRental">AED 300,000</div>
+                        <div class="result-subtitle">Over holding period</div>
+                    </div>
+
+                    <div class="result-item">
+                        <div class="result-label">Total ROI</div>
+                        <div class="result-value" id="totalROI">46.9%</div>
+                        <div class="result-subtitle">Capital gains + rental income</div>
+                    </div>
+
+                    <div class="result-item">
+                        <div class="result-label">Annualized ROI</div>
+                        <div class="result-value" id="annualizedROI">8.0%</div>
+                        <div class="result-subtitle">Average annual return</div>
+                    </div>
+
+                    <div class="roi-chart">
+                        <h3 style="margin-bottom: 15px; color: #ffffff;">Return Breakdown</h3>
+                        <div class="chart-label">
+                            <span>Capital Appreciation</span>
+                            <span id="capitalGainPercent">46.9%</span>
+                        </div>
+                        <div class="chart-bar" id="capitalGainBar"></div>
+                        
+                        <div class="chart-label">
+                            <span>Rental Income</span>
+                            <span id="rentalPercent">30.0%</span>
+                        </div>
+                        <div class="chart-bar" id="rentalBar"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="actions-section">
+            <h2 class="section-title">
+                <i class="fas fa-file-alt"></i>
+                Generate Report
+            </h2>
+            <div class="action-buttons">
+                <button class="action-btn" onclick="generatePDF()">
+                    <i class="fas fa-file-pdf"></i>
+                    Create PDF Report
+                </button>
+                <button class="action-btn secondary" onclick="contactAgent()">
+                    <i class="fas fa-phone"></i>
+                    Contact Agent
+                </button>
+                <button class="action-btn secondary" onclick="scheduleViewing()">
+                    <i class="fas fa-calendar"></i>
+                    Schedule Viewing
+                </button>
+            </div>
+        </div>
+    </div>
+
+    </div>
+
+    <div class="bottom-nav">
+        <div class="nav-container">
+            <div class="nav-item" onclick="navigateTo('home')">
+                <i class="fas fa-home nav-icon"></i>
+                <div class="nav-label">Home</div>
+            </div>
+            <div class="nav-item" onclick="navigateTo('secondary-listings')">
+                <i class="fas fa-list nav-icon"></i>
+                <div class="nav-label">Secondary</div>
+            </div>
+            <div class="nav-item" onclick="navigateTo('ruba-ai')">
+                <i class="fas fa-robot nav-icon"></i>
+                <div class="nav-label">Ruba AI</div>
+            </div>
+            <div class="nav-item active" onclick="navigateTo('explore-developers')">
+                <i class="fas fa-building nav-icon"></i>
+                <div class="nav-label">Developers</div>
+            </div>
+            <div class="nav-item" onclick="navigateTo('jobs')">
+                <i class="fas fa-briefcase nav-icon"></i>
+                <div class="nav-label">Jobs</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="roi-calculator.js"></script>
+    <script>
+        function navigateTo(page) {
+            switch(page) {
+                case 'home':
+                    window.location.href = 'home.html';
+                    break;
+                case 'explore-developers':
+                    window.location.href = 'index.html';
+                    break;
+                case 'secondary-listings':
+                    alert('Secondary listings feature coming soon!');
+                    break;
+                case 'ruba-ai':
+                    alert('Ruba AI feature coming soon!');
+                    break;
+                case 'jobs':
+                    alert('Jobs feature coming soon!');
+                    break;
+            }
+        }
+    </script>
+</body>
+</html>
